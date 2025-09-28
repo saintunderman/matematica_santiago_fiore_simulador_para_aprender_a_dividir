@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador para aprender a dividir</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador para aprender a dividir</h1>
+
+        <div class="theory-section">
+            <!-- MEJORA (de tu versión): type="button" es una buena práctica -->
+            <button id="toggle-theory-btn" type="button">Mostrar Fundamento Teórico</button>
+            <div id="theory-content" class="hidden">
+                <h3>La División con Números Naturales</h3>
+                <p>Al dividir un <strong>Dividendo (D)</strong> entre un <strong>Divisor (d ≠ 0)</strong>, se obtienen dos números únicos: <strong>Cociente (C)</strong> y <strong>Resto (R)</strong>.</p>
+                <div class="formula">D = d × C + R</div>
+                <p><strong>Condiciones:</strong></p>
+                <ul>
+                    <li>Unicidad: para cada par (D, d), el cociente y el resto son únicos.</li>
+                    <li>Condición del Resto: 0 ≤ R &lt; d.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="input-group">
+                <label for="dividendo">Dividendo (D):</label>
+                <input type="number" id="dividendo" value="77" min="0" step="1">
+            </div>
+            <div class="input-group">
+                <label for="divisor">Divisor (d):</label>
+                <input type="number" id="divisor" value="4" min="1" step="1">
+            </div>
+            <button id="start-btn" type="button">Iniciar Visualización</button>
+            <button id="next-step-btn" type="button" disabled>Siguiente Paso →</button>
+        </div>
+
+        <div id="division-area">
+            <div id="main-problem">
+                <div class="calculation-container">
+                    <!-- MEJORA (de tu versión): Atributos ARIA para accesibilidad -->
+                    <div class="dividendo-container" aria-hidden="true"></div>
+                    <div id="work-area" aria-hidden="true"></div>
+                </div>
+                <div class="divisor-area">
+                    <div class="divisor-container" aria-hidden="true"></div>
+                    <div class="cociente-container" aria-hidden="true"></div>
+                </div>
+            </div>
+            <!-- MEJORA (de tu versión): aria-live notifica cambios a lectores de pantalla -->
+            <div class="explanation-box" aria-live="polite">
+                <h3>Explicación del Paso Actual:</h3>
+                <p id="explanation-text">Ingresa un dividendo y un divisor, y presiona "Iniciar".</p>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div id="summary" class="hidden">
+                <h2>Resumen Final</h2>
+                <div id="final-result"></div>
+                <h3>Comprobación: D = d × C + R</h3>
+                <div id="proof"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <p>Recurso educativo desarrollado por Santiago Fiore.</p>
+        <!-- MEJORA (de tu versión): rel="noopener" es una buena práctica de seguridad -->
+        <p>Más contenidos en: <a href="https://sites.google.com/view/santiago-fiore/portada" target="_blank" rel="noopener">sitio web</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+:root {
+    --primary-color: #007bff; --dark-blue: #004085; --highlight-bg: #fffbe5; --success-bg: #d4edda; --font-mono: 'Courier New', Courier, monospace; --separator-color: #dee2e6;
+}
+body {
+    font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh;
+}
+.container {
+    width: 100%; max-width: 1100px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: grid; grid-template-columns: 2fr 1fr;
+    grid-template-areas: "header header" "theory theory" "controls controls" "division side" "division side"; gap: 20px;
+}
+h1 {
+    grid-area: header; text-align: center; margin-bottom: 0;
+    /* MEJORA (de tu versión): Tipografía fluida */
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+.theory-section { grid-area: theory; }
+#controls { grid-area: controls; }
+#division-area { grid-area: division; }
+.side-panel { grid-area: side; }
+button { padding: 10px 20px; font-size: 1rem; border: none; border-radius: 8px; color: white; background-color: var(--primary-color); cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+#controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; background: #f1f3f5; padding: 15px; border-radius: 8px;}
+#main-problem {
+    display: flex; font-family: var(--font-mono); background-color: #f8f9fa; padding: 20px; border-radius: 8px; align-items: stretch;
+    /* MEJORA (de tu versión): Tipografía fluida */
+    font-size: clamp(1.2rem, 3vw, 2rem);
+}
+.divisor-area { border-left: 2px solid var(--separator-color); padding-left: 20px; text-align: center; }
+.highlighted { background-color: var(--highlight-bg); }
+.calculation-container { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-end; padding-right: 20px; }
+.dividendo-container, .divisor-container { font-weight: bold; color: var(--dark-blue); padding: 5px 10px; border-radius: 5px; display: inline-block; }
+.divisor-container { border-bottom: 2px solid var(--separator-color); margin-bottom: 0.5em; min-width: 4ch; }
+#work-area { width: 100%; margin-top: 20px; font-size: 0.9em; text-align: right; }
+.step-group { display: block; text-align: right; margin-top: 0.5em; }
+.work-row { padding: 0.1em 0; }
+.subtraction { color: #E83e8c; }
+.remainder { color: #6f42c1; font-weight: bold; border-top: 2px solid #333; display: inline-block; padding: 0 0.2em; }
+.cociente-container { color: #28a745; font-weight: bold; text-align: right; }
+.explanation-box, #summary, .theory-section { background-color: #f0f8ff; border-left: 5px solid var(--primary-color); padding: 15px; border-radius: 5px; }
+#toggle-theory-btn { background-color: #6c757d; font-size: 14px; padding: 5px 10px; }
+.formula { background: #e9ecef; padding: 10px; margin: 10px 0; text-align: center; font-family: var(--font-mono); font-weight: bold; border-radius: 5px; }
+.hidden { display: none; }
+#final-result, #proof { font-size: 1.1em; font-weight: bold; background: var(--success-bg); padding: 10px; border-radius: 5px; margin-top: 10px; text-align: center; }
+.main-footer { width: 100%; text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 0.9em; }
+.main-footer a { color: var(--primary-color); text-decoration: none; }
+.main-footer a:hover { text-decoration: underline; }
+
+/* --- MEJORA (de tu versión): Diseño Responsivo --- */
+@media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; grid-template-areas: "header" "theory" "controls" "division" "side"; }
+    #controls { flex-direction: column; }
+    #main-problem { flex-direction: column; }
+    .calculation-container { align-items: center; padding-right: 0; }
+    .divisor-area { border-left: none; padding-left: 0; border-top: 2px solid var(--separator-color); margin-top: 20px; padding-top: 20px; }
+}
