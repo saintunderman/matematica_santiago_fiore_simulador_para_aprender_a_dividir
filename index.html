@@ -8,7 +8,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Simulador para aprender a dividir</h1>
+        <div class="header-controls">
+            <h1>Simulador para aprender a dividir</h1>
+            <div class="utility-buttons">
+                <button id="show-exercises-btn" type="button" title="Practicar">📝 Ejercicios</button>
+                <button id="show-history-btn" type="button" title="Ver historial">📊 Historial</button>
+                <button id="show-timer-btn" type="button" title="Modo contrarreloj">⏱️ Contrarreloj</button>
+            </div>
+        </div>
 
         <div class="theory-section">
             <!-- MEJORA (de tu versión): type="button" es una buena práctica -->
@@ -34,11 +41,38 @@
                 <label for="divisor">Divisor (d):</label>
                 <input type="number" id="divisor" value="4" min="1" step="1">
             </div>
-            <button id="start-btn" type="button">Iniciar Visualización</button>
-            <button id="next-step-btn" type="button" disabled>Siguiente Paso →</button>
+            <div class="button-group">
+                <button id="start-btn" type="button">🚀 Iniciar Visualización</button>
+            </div>
+        </div>
+
+        <div class="navigation-controls hidden" id="navigation-controls">
+            <button id="prev-step-btn" type="button" disabled>← Anterior</button>
+            <button id="next-step-btn" type="button" disabled>Siguiente →</button>
+            <button id="reset-steps-btn" type="button">↻ Reiniciar</button>
+        </div>
+
+        <div class="visualization-options">
+            <label class="toggle-switch">
+                <input type="checkbox" id="show-visual-toggle" checked>
+                <span class="slider"></span>
+                <span class="toggle-label">🎨 Representación Visual</span>
+            </label>
+            <div class="info-note">
+                <span class="info-icon">ℹ️</span>
+                <span class="info-text">La representación visual con objetos está disponible únicamente para dividendos entre 1 y 100. Los cálculos funcionan con cualquier valor.</span>
+            </div>
         </div>
 
         <div id="division-area">
+            <!-- Visualización Gráfica -->
+            <div id="visual-representation" class="visual-area">
+                <h3>Representación Visual</h3>
+                <div id="visual-objects"></div>
+                <div id="visual-groups"></div>
+            </div>
+
+            <div class="methods-container">
             <div id="main-problem">
                 <div class="calculation-container">
                     <!-- MEJORA (de tu versión): Atributos ARIA para accesibilidad -->
@@ -50,6 +84,8 @@
                     <div class="cociente-container" aria-hidden="true"></div>
                 </div>
             </div>
+            </div>
+            
             <!-- MEJORA (de tu versión): aria-live notifica cambios a lectores de pantalla -->
             <div class="explanation-box" aria-live="polite">
                 <h3>Explicación del Paso Actual:</h3>
@@ -63,6 +99,91 @@
                 <div id="final-result"></div>
                 <h3>Comprobación: D = d × C + R</h3>
                 <div id="proof"></div>
+                <div class="action-buttons">
+                    <button id="print-btn" type="button">🖨️ Imprimir</button>
+                    <button id="save-btn" type="button">💾 Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Ejercicios -->
+        <div id="exercises-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Practica División</h2>
+                <div id="exercise-area">
+                    <p id="exercise-question"></p>
+                    <div class="input-group">
+                        <label for="exercise-answer">Tu respuesta (Cociente):</label>
+                        <input type="number" id="exercise-answer" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="exercise-remainder">Resto:</label>
+                        <input type="number" id="exercise-remainder" min="0">
+                    </div>
+                    <button id="check-answer-btn" type="button">Verificar</button>
+                    <button id="new-exercise-btn" type="button">Nuevo Ejercicio</button>
+                    <div id="exercise-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Historial -->
+        <div id="history-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Historial de Operaciones</h2>
+                <div class="history-controls">
+                    <button id="clear-history-btn" type="button">🗑️ Limpiar Historial</button>
+                    <button id="export-history-btn" type="button">📥 Exportar</button>
+                </div>
+                <div id="history-list"></div>
+            </div>
+        </div>
+
+        <!-- Modal de Contrarreloj -->
+        <div id="timer-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>🏃 Modo Contrarreloj</h2>
+                <div id="timer-setup" class="timer-section">
+                    <p>Resuelve la mayor cantidad de divisiones en el tiempo límite</p>
+                    <div class="input-group">
+                        <label for="timer-duration">Duración (segundos):</label>
+                        <select id="timer-duration">
+                            <option value="30">30 segundos</option>
+                            <option value="60" selected>1 minuto</option>
+                            <option value="120">2 minutos</option>
+                            <option value="300">5 minutos</option>
+                        </select>
+                    </div>
+                    <button id="start-timer-btn" type="button">Comenzar Desafío</button>
+                </div>
+                <div id="timer-game" class="timer-section hidden">
+                    <div class="timer-display">
+                        <div class="timer-clock">⏱️ <span id="timer-countdown">60</span>s</div>
+                        <div class="timer-score">Correctas: <span id="timer-correct">0</span> | Incorrectas: <span id="timer-wrong">0</span></div>
+                    </div>
+                    <div id="timer-question"></div>
+                    <div class="timer-inputs">
+                        <div class="input-group">
+                            <label>Cociente:</label>
+                            <input type="number" id="timer-cociente" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Resto:</label>
+                            <input type="number" id="timer-resto" min="0">
+                        </div>
+                    </div>
+                    <button id="timer-submit-btn" type="button">Verificar</button>
+                    <button id="timer-skip-btn" type="button">Saltar</button>
+                    <div id="timer-feedback"></div>
+                </div>
+                <div id="timer-results" class="timer-section hidden">
+                    <h3>¡Tiempo Terminado!</h3>
+                    <div id="timer-final-score"></div>
+                    <button id="timer-restart-btn" type="button">Jugar de Nuevo</button>
+                </div>
             </div>
         </div>
     </div>
