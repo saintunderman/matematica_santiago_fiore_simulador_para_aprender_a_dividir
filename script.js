@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const proofEl = document.getElementById('proof');
     const toggleTheoryBtn = document.getElementById('toggle-theory-btn');
     const theoryContent = document.getElementById('theory-content');
+    const stepNumberEl = document.getElementById('step-number');
+    const stepTotalEl = document.getElementById('step-total');
+    const openVisualWindowBtn = document.getElementById('open-visual-window-btn');
     
     // Nuevos elementos
     const printBtn = document.getElementById('print-btn');
@@ -36,31 +39,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevStepBtn = document.getElementById('prev-step-btn');
     const resetStepsBtn = document.getElementById('reset-steps-btn');
     const navigationControls = document.getElementById('navigation-controls');
-    const showVisualToggle = document.getElementById('show-visual-toggle');
-    const visualRepresentation = document.getElementById('visual-representation');
-    const visualObjects = document.getElementById('visual-objects');
-    const visualGroups = document.getElementById('visual-groups');
     const showTimerBtn = document.getElementById('show-timer-btn');
     const timerModal = document.getElementById('timer-modal');
 
     let state = { dividendoOriginal: 0, divisor: 0, pasos: [], pasoActual: 0 };
     let currentExercise = null;
     let history = JSON.parse(localStorage.getItem('divisionHistory')) || [];
+    let visualWindow = null; // Ventana para visualización
+    
+    // Función para actualizar el indicador de paso
+    function updateStepIndicator() {
+        if (stepNumberEl && stepTotalEl && state.pasos.length > 0) {
+            stepNumberEl.textContent = `Paso ${state.pasoActual}`;
+            stepTotalEl.textContent = `de ${state.pasos.length}`;
+        } else if (stepNumberEl && stepTotalEl) {
+            stepNumberEl.textContent = 'Paso 0';
+            stepTotalEl.textContent = '';
+        }
+    }
 
     function resetState() {
         workArea.innerHTML = '';
         cocienteContainer.innerHTML = '';
         dividendoContainer.textContent = '';
         divisorContainer.textContent = '';
-        if (visualObjects) visualObjects.innerHTML = '';
-        if (visualGroups) visualGroups.innerHTML = '';
-        explanationText.textContent = 'Ingresa un dividendo y un divisor, y presiona "Iniciar".';
+        explanationText.textContent = 'Ingresa un dividendo y un divisor, y presiona "Comenzar".';
         summaryPanel.classList.add('hidden');
         if (nextStepBtn) nextStepBtn.disabled = true;
         if (prevStepBtn) prevStepBtn.disabled = true;
         if (navigationControls) navigationControls.classList.add('hidden');
         dividendoContainer.classList.remove('highlighted');
         divisorContainer.classList.remove('highlighted');
+        updateStepIndicator();
     }
 
     // Función para guardar en historial
@@ -76,6 +86,281 @@ document.addEventListener('DOMContentLoaded', () => {
         history.unshift(entry);
         if (history.length > 50) history = history.slice(0, 50); // Limitar a 50
         localStorage.setItem('divisionHistory', JSON.stringify(history));
+    }
+    
+    // Función para abrir ventana de visualización
+    function openVisualWindow() {
+        if (visualWindow && !visualWindow.closed) {
+            visualWindow.focus();
+            return;
+        }
+        
+        const dividendo = parseInt(dividendoInput.value, 10);
+        const divisor = parseInt(divisorInput.value, 10);
+        
+        if (!Number.isInteger(dividendo) || dividendo < 0 || !Number.isInteger(divisor) || divisor < 1) {
+            alert('Por favor, ingresa valores válidos para dividendo y divisor antes de abrir la ventana de visualización.');
+            return;
+        }
+        
+        if (dividendo > 100) {
+            alert('La representación visual está disponible solo para dividendos entre 1 y 100.');
+            return;
+        }
+        
+        visualWindow = window.open('', 'Visualización de División', 'width=900,height=700,scrollbars=yes,resizable=yes');
+        
+        const htmlContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualización: ${dividendo} ÷ ${divisor}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        .visual-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            border: 3px solid #667eea;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        #visual-objects {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            min-height: 120px;
+            justify-content: center;
+            align-items: center;
+        }
+        .visual-object {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .visual-object:hover {
+            transform: scale(1.2) rotate(15deg);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            80% { transform: scale(0.95); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #visual-groups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .visual-group {
+            padding: 20px;
+            border: 4px dashed #667eea;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            animation: groupForm 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.3s ease;
+        }
+        .visual-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .visual-group-label {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .visual-group-objects {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .visual-object.grouped {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .resto-group {
+            border-color: #dc3545 !important;
+        }
+        .resto-group .visual-group-label {
+            color: #dc3545 !important;
+        }
+        @keyframes groupForm {
+            0% { transform: scale(0.7) translateY(30px); opacity: 0; }
+            60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .info-box {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Visualización de División</h1>
+        <div class="subtitle">${dividendo} ÷ ${divisor}</div>
+        
+        <div class="info-box">
+            💡 Esta ventana muestra la representación visual de la división
+        </div>
+        
+        <div class="visual-section">
+            <div class="section-title">🔵 Total de Objetos: ${dividendo}</div>
+            <div id="visual-objects"></div>
+        </div>
+        
+        <div class="visual-section">
+            <div class="section-title">📦 Agrupando en Grupos de ${divisor}</div>
+            <div id="visual-groups"></div>
+        </div>
+    </div>
+    
+    <script>
+        const dividendo = ${dividendo};
+        const divisor = ${divisor};
+        
+        function createVisualObjects() {
+            const container = document.getElementById('visual-objects');
+            for (let i = 0; i < dividendo; i++) {
+                const obj = document.createElement('div');
+                obj.className = 'visual-object';
+                obj.style.animationDelay = \`\${i * 0.03}s\`;
+                container.appendChild(obj);
+            }
+        }
+        
+        function createVisualGroups() {
+            const container = document.getElementById('visual-groups');
+            const numGroups = Math.floor(dividendo / divisor);
+            const remainder = dividendo % divisor;
+            
+            for (let g = 0; g < numGroups; g++) {
+                const group = document.createElement('div');
+                group.className = 'visual-group';
+                group.style.animationDelay = \`\${g * 0.15}s\`;
+                
+                const label = document.createElement('div');
+                label.className = 'visual-group-label';
+                label.textContent = \`Grupo \${g + 1} (\${divisor} objetos)\`;
+                group.appendChild(label);
+                
+                const objContainer = document.createElement('div');
+                objContainer.className = 'visual-group-objects';
+                
+                for (let i = 0; i < divisor; i++) {
+                    const obj = document.createElement('div');
+                    obj.className = 'visual-object grouped';
+                    obj.style.animationDelay = \`\${(g * divisor + i) * 0.03}s\`;
+                    objContainer.appendChild(obj);
+                }
+                
+                group.appendChild(objContainer);
+                container.appendChild(group);
+            }
+            
+            if (remainder > 0) {
+                const group = document.createElement('div');
+                group.className = 'visual-group resto-group';
+                group.style.animationDelay = \`\${numGroups * 0.15}s\`;
+                
+                const label = document.createElement('div');
+                label.className = 'visual-group-label';
+                label.textContent = \`⚠️ Resto (\${remainder} objetos)\`;
+                group.appendChild(label);
+                
+                const objContainer = document.createElement('div');
+                objContainer.className = 'visual-group-objects';
+                
+                for (let i = 0; i < remainder; i++) {
+                    const obj = document.createElement('div');
+                    obj.className = 'visual-object';
+                    obj.style.animationDelay = \`\${(numGroups * divisor + i) * 0.03}s\`;
+                    objContainer.appendChild(obj);
+                }
+                
+                group.appendChild(objContainer);
+                container.appendChild(group);
+            }
+        }
+        
+        // Crear visualizaciones al cargar
+        setTimeout(() => {
+            createVisualObjects();
+            setTimeout(() => createVisualGroups(), 500);
+        }, 300);
+    </script>
+</body>
+</html>
+        `;
+        
+        visualWindow.document.write(htmlContent);
+        visualWindow.document.close();
+    }
+    
+    // Event listener para botón de ventana visual
+    if (openVisualWindowBtn) {
+        openVisualWindowBtn.addEventListener('click', openVisualWindow);
     }
 
     // --- MEJORA (de tu versión): Lógica de cálculo separada y robusta ---
@@ -117,120 +402,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return pasos;
     }
     
-    // === REPRESENTACIÓN VISUAL CON OBJETOS ===
-    function createVisualObjects(count) {
-        if (!visualObjects || !showVisualToggle || !showVisualToggle.checked || count > 100) return;
-        
-        visualObjects.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        
-        for (let i = 0; i < count; i++) {
-            const obj = document.createElement('div');
-            obj.className = 'visual-object';
-            obj.style.animationDelay = `${i * 0.02}s`;
-            fragment.appendChild(obj);
-        }
-        visualObjects.appendChild(fragment);
-    }
-    
-    function createVisualGroups(objectCount, groupSize) {
-        if (!visualGroups || !showVisualToggle || !showVisualToggle.checked || objectCount > 100) return;
-        
-        visualGroups.innerHTML = '';
-        const numGroups = Math.floor(objectCount / groupSize);
-        const remainder = objectCount % groupSize;
-        const fragment = document.createDocumentFragment();
-        
-        for (let g = 0; g < numGroups; g++) {
-            const group = document.createElement('div');
-            group.className = 'visual-group';
-            group.style.animationDelay = `${g * 0.1}s`;
-            
-            const label = document.createElement('div');
-            label.className = 'visual-group-label';
-            label.textContent = `Grupo ${g + 1} (${groupSize} objetos)`;
-            group.appendChild(label);
-            
-            const objContainer = document.createElement('div');
-            objContainer.className = 'visual-group-objects';
-            
-            for (let i = 0; i < groupSize; i++) {
-                const obj = document.createElement('div');
-                obj.className = 'visual-object grouped';
-                objContainer.appendChild(obj);
-            }
-            
-            group.appendChild(objContainer);
-            fragment.appendChild(group);
-        }
-        
-        if (remainder > 0) {
-            const group = document.createElement('div');
-            group.className = 'visual-group';
-            group.style.borderColor = '#dc3545';
-            group.style.animationDelay = `${numGroups * 0.1}s`;
-            
-            const label = document.createElement('div');
-            label.className = 'visual-group-label';
-            label.style.color = '#dc3545';
-            label.textContent = `Resto (${remainder} objetos)`;
-            group.appendChild(label);
-            
-            const objContainer = document.createElement('div');
-            objContainer.className = 'visual-group-objects';
-            
-            for (let i = 0; i < remainder; i++) {
-                const obj = document.createElement('div');
-                obj.className = 'visual-object';
-                objContainer.appendChild(obj);
-            }
-            
-            group.appendChild(objContainer);
-            fragment.appendChild(group);
-        }
-        
-        visualGroups.appendChild(fragment);
-    }
-    
-    // === NAVEGACIÓN DE PASOS ===
-    function renderStepAt(index) {
-        if (!state.pasos || state.pasos.length === 0) return;
-        if (index < -1 || index >= state.pasos.length) return;
-        
-        // Limpiar visualización pero mantener estado
-        workArea.innerHTML = '';
-        cocienteContainer.innerHTML = '';
-        if (visualGroups) visualGroups.innerHTML = '';
-        summaryPanel.classList.add('hidden');
-        
-        // Restablecer visualización inicial
-        dividendoContainer.textContent = state.dividendoOriginal;
-        divisorContainer.textContent = state.divisor;
-        dividendoContainer.classList.add('highlighted');
-        divisorContainer.classList.add('highlighted');
-        createVisualObjects(state.dividendoOriginal);
-        
-        // Ejecutar todos los pasos hasta el índice solicitado
-        if (index >= 0) {
-            for (let i = 0; i <= index; i++) {
-                ejecutarPaso(state.pasos[i], true);
-            }
-        }
-        
-        state.pasoActual = index + 1;
-        
-        if (index === -1) {
-            explanationText.textContent = "Todo listo. Presiona 'Siguiente' para comenzar.";
-        }
-        
-        updateNavigationButtons();
-    }
-    
     function updateNavigationButtons() {
         if (!prevStepBtn || !nextStepBtn) return;
         
         prevStepBtn.disabled = state.pasoActual <= 0;
         nextStepBtn.disabled = state.pasoActual >= state.pasos.length;
+        updateStepIndicator();
     }
     
     // --- MEJORA (de tu versión): La función de renderizado es más simple ---
@@ -238,12 +415,32 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (paso.tipo) {
             case 'estimar': {
                 const unidad = paso.potencia === 1 ? 'unidades' : `múltiplos de ${paso.potencia}`;
-                explanationText.innerHTML = `<b>Paso (Estimar)</b><br>Del número <b>${paso.dividendoActual}</b>, buscamos cuántos grupos del divisor podemos restar usando <b>${unidad}</b>.`;
+                explanationText.innerHTML = `
+                    <div style="padding: 10px; background: rgba(102, 126, 234, 0.1); border-radius: 8px; margin: 10px 0;">
+                        <strong style="color: #667eea; font-size: 1.1rem;">🔍 Estimación</strong><br><br>
+                        Del número <strong style="color: #764ba2; font-size: 1.2rem;">${paso.dividendoActual}</strong>, buscamos cuántos grupos del divisor
+                        <strong style="color: #764ba2; font-size: 1.2rem;">${state.divisor}</strong> podemos restar.<br><br>
+                        Trabajamos con <strong style="color: #667eea;">${unidad}</strong> para hacer el cálculo más eficiente.
+                    </div>
+                `;
                 break;
             }
             case 'restar': {
                 const dividendoAnterior = state.pasos[state.pasoActual - 1].dividendoActual;
-                explanationText.innerHTML = `<b>Paso (Restar)</b><br>Multiplicamos <b>${paso.cocienteAAgregar} × ${state.divisor} = ${paso.producto}</b>.<br>Luego restamos: ${dividendoAnterior} - ${paso.producto} = <b>${paso.nuevoDividendo}</b>.`;
+                explanationText.innerHTML = `
+                    <div style="padding: 10px; background: rgba(211, 51, 132, 0.1); border-radius: 8px; margin: 10px 0;">
+                        <strong style="color: #d63384; font-size: 1.1rem;">➖ Operación de Resta</strong><br><br>
+                        <div style="background: white; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                            Multiplicamos: <strong style="color: #28a745;">${paso.cocienteAAgregar}</strong> × 
+                            <strong style="color: #007bff;">${state.divisor}</strong> = 
+                            <strong style="color: #d63384; font-size: 1.2rem;">${paso.producto}</strong>
+                        </div>
+                        Luego restamos del dividendo parcial:<br>
+                        <div style="background: white; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 1.1rem;">
+                            ${dividendoAnterior} - ${paso.producto} = <strong style="color: #6f42c1; font-size: 1.3rem;">${paso.nuevoDividendo}</strong>
+                        </div>
+                    </div>
+                `;
                 const stepGroup = document.createElement('div'); stepGroup.className = 'step-group';
                 const productoRow = document.createElement('div'); productoRow.className = 'work-row subtraction'; productoRow.textContent = `- ${paso.producto}`; stepGroup.appendChild(productoRow);
                 const restoRow = document.createElement('div'); restoRow.className = 'work-row remainder'; restoRow.textContent = paso.nuevoDividendo;
@@ -255,7 +452,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
             case 'finalizar': {
-                explanationText.innerHTML = paso.mensaje ? `<b>¡Resultado Final!</b><br>${paso.mensaje}` : `<b>¡Hemos terminado!</b><br>El resto (${paso.restoFinal}) es menor que el divisor (${state.divisor}). Sumamos los cocientes parciales.`;
+                explanationText.innerHTML = paso.mensaje ? 
+                    `<div style="padding: 15px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; border: 2px solid #28a745;">
+                        <strong style="color: #28a745; font-size: 1.2rem;">✅ ¡Resultado Final!</strong><br><br>
+                        ${paso.mensaje}
+                    </div>` : 
+                    `<div style="padding: 15px; background: rgba(40, 167, 69, 0.1); border-radius: 8px; border: 2px solid #28a745;">
+                        <strong style="color: #28a745; font-size: 1.2rem;">✅ ¡División Completada!</strong><br><br>
+                        El resto <strong style="color: #6f42c1; font-size: 1.1rem;">(${paso.restoFinal})</strong> es menor que el divisor 
+                        <strong style="color: #007bff; font-size: 1.1rem;">(${state.divisor})</strong>.<br><br>
+                        Ahora sumamos todos los cocientes parciales para obtener el resultado final.
+                    </div>`;
                 const lineaSuma = document.createElement('div'); lineaSuma.style.borderTop = '2px solid #28a745'; lineaSuma.style.marginTop = '0.2em'; cocienteContainer.appendChild(lineaSuma);
                 const cocienteFinalRow = document.createElement('div'); cocienteFinalRow.textContent = paso.cocienteFinal; cocienteContainer.appendChild(cocienteFinalRow);
                 summaryPanel.classList.remove('hidden');
@@ -265,14 +472,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (nextStepBtn) nextStepBtn.disabled = true;
                 // Guardar en historial
                 saveToHistory(state.dividendoOriginal, state.divisor, paso.cocienteFinal, paso.restoFinal);
-                // Actualizar visualizaciones
-                createVisualGroups(state.dividendoOriginal, state.divisor);
                 break;
             }
         }
         if (!silent) updateNavigationButtons();
     }
 
+    // === NAVEGACIÓN Y CONTROL DE FLUJO OPTIMIZADO ===
+    
     // --- Listeners ---
     startBtn.addEventListener('click', () => {
         resetState();
@@ -280,27 +487,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const divisor = parseInt(divisorInput.value, 10);
 
         if (!Number.isInteger(dividendo) || dividendo < 0) {
-            explanationText.innerHTML = "<strong style='color:red;'>Error:</strong> El dividendo debe ser un entero ≥ 0."; return;
+            explanationText.innerHTML = "<strong style='color:red;'>⚠️ Error:</strong> El dividendo debe ser un entero ≥ 0."; return;
         }
         if (!Number.isInteger(divisor) || divisor < 1) {
-            explanationText.innerHTML = "<strong style='color:red;'>Error:</strong> El divisor debe ser un entero ≥ 1."; return;
+            explanationText.innerHTML = "<strong style='color:red;'>⚠️ Error:</strong> El divisor debe ser un entero ≥ 1."; return;
         }
 
         state.dividendoOriginal = dividendo;
         state.divisor = divisor;
         state.pasos = calcularPasos(dividendo, divisor);
+        state.pasoActual = 0;
         
         dividendoContainer.textContent = dividendo; divisorContainer.textContent = divisor;
         dividendoContainer.classList.add('highlighted'); divisorContainer.classList.add('highlighted');
-        explanationText.textContent = "Todo listo. Presiona 'Siguiente Paso' para comenzar.";
+        explanationText.innerHTML = `
+            <div style="padding: 15px; background: rgba(0, 123, 255, 0.1); border-radius: 8px; border: 2px solid #007bff;">
+                <strong style="color: #007bff; font-size: 1.2rem;">✅ ¡Listo para comenzar!</strong><br><br>
+                Presiona <strong>'Siguiente'</strong> para ver el primer paso de la división.<br><br>
+                Dividendo: <strong style="color: #764ba2;">${dividendo}</strong> | 
+                Divisor: <strong style="color: #764ba2;">${divisor}</strong>
+            </div>
+        `;
         if (nextStepBtn) nextStepBtn.disabled = false;
         if (navigationControls) navigationControls.classList.remove('hidden');
-        
-        // Crear visualización inicial
-        createVisualObjects(dividendo);
+        updateStepIndicator();
 
-        // MEJORA (de tu versión): Ejecutar casos especiales inmediatamente
+        // MEJORA: Ejecutar casos especiales inmediatamente
         if (state.pasos.length === 1 && state.pasos[0].tipo === 'finalizar') {
+            state.pasoActual = 1;
             ejecutarPaso(state.pasos[0]);
         }
     });
@@ -315,7 +529,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (prevStepBtn) {
         prevStepBtn.addEventListener('click', () => {
             if (state.pasoActual > 0) {
-                renderStepAt(state.pasoActual - 2);
+                // Recalcular desde el principio hasta el paso anterior
+                const targetStep = state.pasoActual - 2;
+                workArea.innerHTML = '';
+                cocienteContainer.innerHTML = '';
+                summaryPanel.classList.add('hidden');
+                dividendoContainer.textContent = state.dividendoOriginal;
+                divisorContainer.textContent = state.divisor;
+                dividendoContainer.classList.add('highlighted');
+                divisorContainer.classList.add('highlighted');
+                
+                if (targetStep >= 0) {
+                    for (let i = 0; i <= targetStep; i++) {
+                        ejecutarPaso(state.pasos[i], true);
+                    }
+                    state.pasoActual = targetStep + 1;
+                } else {
+                    state.pasoActual = 0;
+                    explanationText.innerHTML = `
+                        <div style="padding: 15px; background: rgba(0, 123, 255, 0.1); border-radius: 8px; border: 2px solid #007bff;">
+                            <strong style="color: #007bff; font-size: 1.2rem;">✅ ¡Listo para comenzar!</strong><br><br>
+                            Presiona <strong>'Siguiente'</strong> para ver el primer paso de la división.
+                        </div>
+                    `;
+                }
+                
+                if (nextStepBtn) nextStepBtn.disabled = false;
+                updateNavigationButtons();
             }
         });
     }
@@ -323,24 +563,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetStepsBtn) {
         resetStepsBtn.addEventListener('click', () => {
             if (state.pasos.length > 0) {
-                renderStepAt(-1);
+                workArea.innerHTML = '';
+                cocienteContainer.innerHTML = '';
+                summaryPanel.classList.add('hidden');
+                dividendoContainer.textContent = state.dividendoOriginal;
+                divisorContainer.textContent = state.divisor;
+                dividendoContainer.classList.add('highlighted');
+                divisorContainer.classList.add('highlighted');
                 state.pasoActual = 0;
                 if (nextStepBtn) nextStepBtn.disabled = false;
-                explanationText.textContent = "Todo listo. Presiona 'Siguiente Paso' para comenzar.";
-            }
-        });
-    }
-
-    // Toggles de visualización
-    if (showVisualToggle) {
-        showVisualToggle.addEventListener('change', (e) => {
-            if (visualRepresentation) {
-                visualRepresentation.style.display = e.target.checked ? 'block' : 'none';
-                
-                // Si se activa en medio del proceso, regenerar toda la visualización hasta el paso actual
-                if (e.target.checked && state.pasos && state.pasos.length > 0 && state.pasoActual > 0) {
-                    renderStepAt(state.pasoActual - 1);
-                }
+                explanationText.innerHTML = `
+                    <div style="padding: 15px; background: rgba(0, 123, 255, 0.1); border-radius: 8px; border: 2px solid #007bff;">
+                        <strong style="color: #007bff; font-size: 1.2rem;">🔄 Reiniciado</strong><br><br>
+                        Presiona <strong>'Siguiente'</strong> para comenzar nuevamente.
+                    </div>
+                `;
+                updateStepIndicator();
             }
         });
     }
@@ -350,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleTheoryBtn.textContent = hidden ? 'Mostrar Fundamento Teórico' : 'Ocultar Fundamento Teórico';
     });
 
-    // === NUEVAS FUNCIONALIDADES ===
+    // === FUNCIONALIDADES ADICIONALES ===
 
     // Soporte para teclado
     document.addEventListener('keydown', (e) => {

@@ -42,36 +42,12 @@
                 <input type="number" id="divisor" value="4" min="1" step="1">
             </div>
             <div class="button-group">
-                <button id="start-btn" type="button">🚀 Iniciar Visualización</button>
-            </div>
-        </div>
-
-        <div class="navigation-controls hidden" id="navigation-controls">
-            <button id="prev-step-btn" type="button" disabled>← Anterior</button>
-            <button id="next-step-btn" type="button" disabled>Siguiente →</button>
-            <button id="reset-steps-btn" type="button">↻ Reiniciar</button>
-        </div>
-
-        <div class="visualization-options">
-            <label class="toggle-switch">
-                <input type="checkbox" id="show-visual-toggle" checked>
-                <span class="slider"></span>
-                <span class="toggle-label">🎨 Representación Visual</span>
-            </label>
-            <div class="info-note">
-                <span class="info-icon">ℹ️</span>
-                <span class="info-text">La representación visual con objetos está disponible únicamente para dividendos entre 1 y 100. Los cálculos funcionan con cualquier valor.</span>
+                <button id="start-btn" type="button">🚀 Comenzar</button>
+                <button id="open-visual-window-btn" type="button" class="secondary-btn">🎨 Representación Visual</button>
             </div>
         </div>
 
         <div id="division-area">
-            <!-- Visualización Gráfica -->
-            <div id="visual-representation" class="visual-area">
-                <h3>Representación Visual</h3>
-                <div id="visual-objects"></div>
-                <div id="visual-groups"></div>
-            </div>
-
             <div class="methods-container">
             <div id="main-problem">
                 <div class="calculation-container">
@@ -84,12 +60,23 @@
                     <div class="cociente-container" aria-hidden="true"></div>
                 </div>
             </div>
+            
+            <!-- Controles de navegación junto al cálculo -->
+            <div class="navigation-controls hidden" id="navigation-controls">
+                <button id="prev-step-btn" type="button" disabled>← Anterior</button>
+                <button id="next-step-btn" type="button" disabled>Siguiente →</button>
+                <button id="reset-steps-btn" type="button">↻ Reiniciar</button>
+            </div>
             </div>
             
             <!-- MEJORA (de tu versión): aria-live notifica cambios a lectores de pantalla -->
             <div class="explanation-box" aria-live="polite">
+                <div class="step-indicator">
+                    <span class="step-number" id="step-number">Paso 0</span>
+                    <span class="step-total" id="step-total"></span>
+                </div>
                 <h3>Explicación del Paso Actual:</h3>
-                <p id="explanation-text">Ingresa un dividendo y un divisor, y presiona "Iniciar".</p>
+                <p id="explanation-text">Ingresa un dividendo y un divisor, y presiona "Comenzar".</p>
             </div>
         </div>
 
